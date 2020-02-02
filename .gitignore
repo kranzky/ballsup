@@ -1,0 +1,6 @@
+bin/ballsup
+obj/*.o
+tmp
+.d
+*swp
+.vscode/ipch/
