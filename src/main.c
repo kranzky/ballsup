@@ -94,6 +94,8 @@ int main(int argc, char **argv)
           break;
       }
     }
+    if (SDL_SetTextureColorMod(ball, 0xFF, 0x00, 0x00) < 0)
+      fprintf(stderr, "SDL_SetTextureColorMod: %s\n", SDL_GetError());
     SDL_RenderCopy(screen, ball, &src, &dst);
     SDL_RenderPresent(screen);
   }
