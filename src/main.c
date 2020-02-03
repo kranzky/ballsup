@@ -20,6 +20,8 @@ int main(int argc, char **argv)
   SDL_Renderer *screen = NULL;
   SDL_Surface *surface = NULL;
   SDL_Texture *ball = NULL;
+
+  srand(time(NULL));
   
   if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER) != 0)
     fprintf(stderr, "SDL_Init: %s\n", SDL_GetError());
@@ -94,9 +96,15 @@ int main(int argc, char **argv)
           break;
       }
     }
-    if (SDL_SetTextureColorMod(ball, 0xFF, 0x00, 0x00) < 0)
-      fprintf(stderr, "SDL_SetTextureColorMod: %s\n", SDL_GetError());
-    SDL_RenderCopy(screen, ball, &src, &dst);
+    for (int i = 0; i < 1000; ++i) {
+      dst.w = rand() % 500 + 12;
+      dst.h = dst.w;
+      dst.x = rand() % (width + dst.w) - dst.w/2;
+      dst.y = rand() % (height + dst.h) - dst.h/2;
+      if (SDL_SetTextureColorMod(ball, rand() % 0xFF, rand() % 0xFF, rand() % 0xFF) < 0)
+        fprintf(stderr, "SDL_SetTextureColorMod: %s\n", SDL_GetError());
+      SDL_RenderCopy(screen, ball, &src, &dst);
+    }
     SDL_RenderPresent(screen);
   }
 
