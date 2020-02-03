@@ -9,6 +9,18 @@
 
 //==============================================================================
 
+#define NUM_ENTITIES 1000
+
+typedef struct
+{
+  int x;
+  int y;
+  int size;
+  Uint8 r;
+  Uint8 g;
+  Uint8 b;
+} Entity;
+
 //------------------------------------------------------------------------------
 
 int main(int argc, char **argv)
@@ -20,6 +32,7 @@ int main(int argc, char **argv)
   SDL_Renderer *screen = NULL;
   SDL_Surface *surface = NULL;
   SDL_Texture *ball = NULL;
+  Entity * entities = NULL;
 
   srand(time(NULL));
   
@@ -73,8 +86,23 @@ int main(int argc, char **argv)
 
   IMG_Quit();
 
-  SDL_Rect src = (SDL_Rect){0, 0, 1240, 1240};
+  SDL_Rect src = (SDL_Rect){0, 0, 1249, 1249};
   SDL_Rect dst = (SDL_Rect){width/2 - 256, height/2 - 256, 512, 512};
+
+  entities = calloc(NUM_ENTITIES, sizeof(Entity));
+  if (!entities)
+    fprintf(stderr, "Allocate entities\n");
+  else {
+    for (int i = 0; i < NUM_ENTITIES; ++i) {
+      Entity *entity = &entities[i];
+      entity->size = rand() % 500 + 12;
+      entity->x = rand() % (width + entity->size * 2) - entity->size;
+      entity->y = rand() % (height + entity->size * 2) - entity->size;
+      entity->r = rand() % 0xFF;
+      entity->g = rand() % 0xFF;
+      entity->b = rand() % 0xFF;
+    }
+  }
 
   while (!quit)
   {
@@ -96,18 +124,26 @@ int main(int argc, char **argv)
           break;
       }
     }
-    for (int i = 0; i < 1000; ++i) {
-      dst.w = rand() % 500 + 12;
-      dst.h = dst.w;
-      dst.x = rand() % (width + dst.w) - dst.w/2;
-      dst.y = rand() % (height + dst.h) - dst.h/2;
-      if (SDL_SetTextureColorMod(ball, rand() % 0xFF, rand() % 0xFF, rand() % 0xFF) < 0)
-        fprintf(stderr, "SDL_SetTextureColorMod: %s\n", SDL_GetError());
-      SDL_RenderCopy(screen, ball, &src, &dst);
+    if (entities) {
+      for (int i = 0; i < NUM_ENTITIES; ++i) {
+        Entity *entity = &entities[i];
+        dst.w = entity->size;
+        dst.h = dst.w;
+        dst.x = entity->x;
+        dst.y = entity->y;
+        if (SDL_SetTextureColorMod(ball, entity->r, entity->g, entity->b) < 0)
+          fprintf(stderr, "SDL_SetTextureColorMod: %s\n", SDL_GetError());
+        entity->size += 1;
+        entity->x -= 1;
+        entity->y -= 1;
+        SDL_RenderCopy(screen, ball, &src, &dst);
+      }
     }
     SDL_RenderPresent(screen);
   }
 
+  if (entities)
+    free(entities);
   if (ball)
     SDL_DestroyTexture(ball);
   if (screen)
