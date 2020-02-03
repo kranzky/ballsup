@@ -5,6 +5,7 @@
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_events.h>
+#include <SDL2/SDL_image.h>
 
 //==============================================================================
 
@@ -17,6 +18,8 @@ int main(int argc, char **argv)
   int height = 720;
   SDL_Window *window = NULL;
   SDL_Renderer *screen = NULL;
+  SDL_Surface *surface = NULL;
+  SDL_Texture *ball = NULL;
   
   if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER) != 0)
     fprintf(stderr, "SDL_Init: %s\n", SDL_GetError());
@@ -35,6 +38,8 @@ int main(int argc, char **argv)
       fprintf(stderr, "SDL_SetHint: SDL_HINT_VIDEO_MAC_FULLSCREEN_SPACES\n");
     if (SDL_ShowCursor(SDL_DISABLE) < 0)
       fprintf(stderr, "SDL_ShowCursor: %s\n", SDL_GetError());
+    if (IMG_Init(IMG_INIT_PNG) != IMG_INIT_PNG)
+      fprintf(stderr, "IMG_Init: %s\n", IMG_GetError());
     window = SDL_CreateWindow("Balls Up!", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, SDL_WINDOW_OPENGL | SDL_WINDOW_INPUT_GRABBED);
   }
 
@@ -45,6 +50,29 @@ int main(int argc, char **argv)
     SDL_GetWindowSize(window, &width, &height);
     screen = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
   }
+
+  if (!screen)
+    fprintf(stderr, "SDL_CreateRenderer: %s\n", SDL_GetError());
+  else
+  {
+    surface = IMG_Load("res/ball.png");
+  }
+
+  if (!surface)
+    fprintf(stderr, "IMG_Load: %s\n", IMG_GetError());
+  else
+  {
+    ball = SDL_CreateTextureFromSurface(screen, surface);
+    SDL_FreeSurface(surface);
+  }
+
+  if (!ball)
+    fprintf(stderr, "SDL_CreateTextureFromSurface: %s\n", IMG_GetError());
+
+  IMG_Quit();
+
+  SDL_Rect src = (SDL_Rect){0, 0, 1240, 1240};
+  SDL_Rect dst = (SDL_Rect){width/2 - 256, height/2 - 256, 512, 512};
 
   while (!quit)
   {
@@ -66,17 +94,16 @@ int main(int argc, char **argv)
           break;
       }
     }
+    SDL_RenderCopy(screen, ball, &src, &dst);
+    SDL_RenderPresent(screen);
   }
 
+  if (ball)
+    SDL_DestroyTexture(ball);
   if (screen)
-  {
     SDL_DestroyRenderer(screen);
-  }
-
   if (window)
-  {
     SDL_DestroyWindow(window);
-  }
 
   SDL_Quit();
 
