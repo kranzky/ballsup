@@ -33,7 +33,9 @@ int main(int argc, char **argv)
       fprintf(stderr, "SDL_SetHint: SDL_HINT_VIDEO_HIGHDPI_DISABLED\n");
     if (!SDL_SetHint(SDL_HINT_VIDEO_MAC_FULLSCREEN_SPACES, "0"))
       fprintf(stderr, "SDL_SetHint: SDL_HINT_VIDEO_MAC_FULLSCREEN_SPACES\n");
-    window = SDL_CreateWindow("Balls Up!", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, SDL_WINDOW_OPENGL | SDL_WINDOW_FULLSCREEN_DESKTOP | SDL_WINDOW_INPUT_GRABBED);
+    if (SDL_ShowCursor(SDL_DISABLE) < 0)
+      fprintf(stderr, "SDL_ShowCursor: %s\n", SDL_GetError());
+    window = SDL_CreateWindow("Balls Up!", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, SDL_WINDOW_OPENGL | SDL_WINDOW_INPUT_GRABBED);
   }
 
   if (!window)
