@@ -7,6 +7,8 @@
 #include <SDL2/SDL_events.h>
 #include <SDL2/SDL_image.h>
 
+#include "SDL_FontCache.h"
+
 //==============================================================================
 
 #define NUM_ENTITIES 1000
@@ -25,6 +27,7 @@ typedef struct
 
 int main(int argc, char **argv)
 {
+  bool ready = false;
   bool quit = false;
   int width = 1280;
   int height = 720;
@@ -32,31 +35,36 @@ int main(int argc, char **argv)
   SDL_Renderer *screen = NULL;
   SDL_Surface *surface = NULL;
   SDL_Texture *ball = NULL;
+  FC_Font *font = NULL;
   Entity * entities = NULL;
+  char buffer[16];
 
   srand(time(NULL));
   
   if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER) != 0)
     fprintf(stderr, "SDL_Init: %s\n", SDL_GetError());
+  else if (SDL_GameControllerAddMappingsFromFile("res/gamecontrollerdb.txt") < 0)
+    fprintf(stderr, "SDL_GameControllerAddMappingsFromFile: %s\n", SDL_GetError());
+  else if (!SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "0"))
+    fprintf(stderr, "SDL_SetHint: SDL_HINT_RENDER_SCALE_QUALITY\n");
+  else if (!SDL_SetHint(SDL_HINT_RENDER_VSYNC, "1"))
+    fprintf(stderr, "SDL_SetHint: SDL_HINT_RENDER_VSYNC\n");
+  else if (!SDL_SetHint(SDL_HINT_VIDEO_HIGHDPI_DISABLED, "1"))
+    fprintf(stderr, "SDL_SetHint: SDL_HINT_VIDEO_HIGHDPI_DISABLED\n");
+  else if (!SDL_SetHint(SDL_HINT_VIDEO_MAC_FULLSCREEN_SPACES, "0"))
+    fprintf(stderr, "SDL_SetHint: SDL_HINT_VIDEO_MAC_FULLSCREEN_SPACES\n");
+  else if (SDL_ShowCursor(SDL_DISABLE) < 0)
+    fprintf(stderr, "SDL_ShowCursor: %s\n", SDL_GetError());
+  else if (IMG_Init(IMG_INIT_PNG) != IMG_INIT_PNG)
+    fprintf(stderr, "IMG_Init: %s\n", IMG_GetError());
+  else if (TTF_Init() != 0)
+    fprintf(stderr, "TTF_Init: %s\n", TTF_GetError());
   else
-  {
-    SDL_JoystickEventState(SDL_ENABLE);
-    if (SDL_GameControllerAddMappingsFromFile("res/gamecontrollerdb.txt") < 0)
-      fprintf(stderr, "SDL_GameControllerAddMappingsFromFile: %s\n", SDL_GetError());
-    if (!SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "0"))
-      fprintf(stderr, "SDL_SetHint: SDL_HINT_RENDER_SCALE_QUALITY\n");
-    if (!SDL_SetHint(SDL_HINT_RENDER_VSYNC, "1"))
-      fprintf(stderr, "SDL_SetHint: SDL_HINT_RENDER_VSYNC\n");
-    if (!SDL_SetHint(SDL_HINT_VIDEO_HIGHDPI_DISABLED, "1"))
-      fprintf(stderr, "SDL_SetHint: SDL_HINT_VIDEO_HIGHDPI_DISABLED\n");
-    if (!SDL_SetHint(SDL_HINT_VIDEO_MAC_FULLSCREEN_SPACES, "0"))
-      fprintf(stderr, "SDL_SetHint: SDL_HINT_VIDEO_MAC_FULLSCREEN_SPACES\n");
-    if (SDL_ShowCursor(SDL_DISABLE) < 0)
-      fprintf(stderr, "SDL_ShowCursor: %s\n", SDL_GetError());
-    if (IMG_Init(IMG_INIT_PNG) != IMG_INIT_PNG)
-      fprintf(stderr, "IMG_Init: %s\n", IMG_GetError());
-    window = SDL_CreateWindow("Balls Up!", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, SDL_WINDOW_OPENGL | SDL_WINDOW_INPUT_GRABBED);
-  }
+    ready = true;
+
+  SDL_JoystickEventState(SDL_ENABLE);
+
+  window = SDL_CreateWindow("Balls Up!", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, SDL_WINDOW_OPENGL | SDL_WINDOW_INPUT_GRABBED);
 
   if (!window)
     fprintf(stderr, "SDL_CreateWindow: %s\n", SDL_GetError());
@@ -83,8 +91,13 @@ int main(int argc, char **argv)
 
   if (!ball)
     fprintf(stderr, "SDL_CreateTextureFromSurface: %s\n", IMG_GetError());
+  else
+    font = FC_CreateFont();
 
-  IMG_Quit();
+  if (!font)
+    fprintf(stderr, "FC_CreateFont\n");
+  else if (FC_LoadFont(font, screen, "res/hack_font.ttf", 15, (SDL_Colour){0xAA, 0xAA, 0xAA, SDL_ALPHA_OPAQUE}, TTF_STYLE_NORMAL) <= 0)
+    fprintf(stderr, "FC_LoadFont\n");
 
   SDL_Rect src = (SDL_Rect){0, 0, 1249, 1249};
   SDL_Rect dst = (SDL_Rect){width/2 - 256, height/2 - 256, 512, 512};
@@ -104,6 +117,7 @@ int main(int argc, char **argv)
     }
   }
 
+  uint32_t epoch = SDL_GetTicks();
   while (!quit)
   {
     SDL_Event event;
@@ -124,6 +138,7 @@ int main(int argc, char **argv)
           break;
       }
     }
+    SDL_RenderClear(screen);
     if (entities) {
       for (int i = 0; i < NUM_ENTITIES; ++i) {
         Entity *entity = &entities[i];
@@ -139,7 +154,13 @@ int main(int argc, char **argv)
         SDL_RenderCopy(screen, ball, &src, &dst);
       }
     }
+    uint32_t delta = SDL_GetTicks() - epoch;
+    snprintf(buffer, 16, "%3.0f", 1000.0f / delta);
+    FC_Draw(font, screen, width - 64, 8, buffer);
     SDL_RenderPresent(screen);
+    if (delta < 20)
+      SDL_Delay(20 - delta);
+    epoch += delta;
   }
 
   if (entities)
@@ -151,6 +172,8 @@ int main(int argc, char **argv)
   if (window)
     SDL_DestroyWindow(window);
 
+  TTF_Quit();
+  IMG_Quit();
   SDL_Quit();
 
   return 0;
