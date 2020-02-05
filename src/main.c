@@ -11,7 +11,8 @@
 
 //==============================================================================
 
-#define NUM_ENTITIES 10000
+#define FOCAL_LENGTH 1000
+#define NUM_ENTITIES 100
 
 typedef struct
 {
@@ -119,7 +120,18 @@ int main(int argc, char **argv)
     }
   }
 
-  Entity camera = {0, 0, -500};
+	for (int z=-1; z<= 1; ++z) {
+		for (int y=-1; y<= 1; ++y) {
+			for (int x=-1; x<= 1; ++x) {
+				int i = (x+1) + 3*(y+1) + 9*(1-z);
+				entities[i].x = x * 256;
+				entities[i].y = y * 256;
+				entities[i].z = z * 256;
+			}
+		}
+	}
+
+  Entity camera = {0, 0, -20000};
 
   uint32_t epoch = SDL_GetTicks();
   while (!quit)
@@ -142,7 +154,7 @@ int main(int argc, char **argv)
           break;
       }
     }
-//  SDL_RenderClear(screen);
+    SDL_RenderClear(screen);
     if (entities) {
       for (int i = 0; i < NUM_ENTITIES; ++i) {
         Entity *entity = &entities[i];
@@ -151,10 +163,10 @@ int main(int argc, char **argv)
           continue;
         double x = entity->x - camera.x;
         double y = entity->y - camera.y;
-        dst.w = 2 * entity->size / d;
+        dst.w = FOCAL_LENGTH * entity->size / d;
         dst.h = dst.w;
-        dst.x = x / d + width/2;
-        dst.y = y / d +  height/2;
+        dst.x = FOCAL_LENGTH * (x-entity->size/2) / d + width/2;
+        dst.y = FOCAL_LENGTH * (y-entity->size/2) / d + height/2;
         if (SDL_SetTextureColorMod(ball, entity->r, entity->g, entity->b) < 0)
           fprintf(stderr, "SDL_SetTextureColorMod: %s\n", SDL_GetError());
         SDL_RenderCopy(screen, ball, &src, &dst);
@@ -169,9 +181,9 @@ int main(int argc, char **argv)
     FC_Draw(font, screen, width - 64, 8, buffer);
     SDL_RenderPresent(screen);
     epoch = SDL_GetTicks();
-    camera.z += 1;
-    if (camera.z > 100000)
-      camera.z = -100000;
+		camera.z += 100;
+    if (camera.z > 10000)
+      camera.z = -20000;
   }
 
   if (entities)
