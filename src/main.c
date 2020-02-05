@@ -11,13 +11,14 @@
 
 //==============================================================================
 
-#define NUM_ENTITIES 1000
+#define NUM_ENTITIES 10000
 
 typedef struct
 {
-  int x;
-  int y;
-  int size;
+  double x;
+  double y;
+  double z;
+  double size;
   Uint8 r;
   Uint8 g;
   Uint8 b;
@@ -108,14 +109,17 @@ int main(int argc, char **argv)
   else {
     for (int i = 0; i < NUM_ENTITIES; ++i) {
       Entity *entity = &entities[i];
-      entity->size = rand() % 500 + 12;
-      entity->x = rand() % (width + entity->size * 2) - entity->size;
-      entity->y = rand() % (height + entity->size * 2) - entity->size;
+      entity->size = 256; // rand() % 240 + 16;
+      entity->x = rand() % 10000 - rand() % 10000;
+      entity->y = rand() % 10000  - rand() % 10000;
+      entity->z = rand() % 10000  - rand() % 10000;
       entity->r = rand() % 0xFF;
       entity->g = rand() % 0xFF;
       entity->b = rand() % 0xFF;
     }
   }
+
+  Entity camera = {0, 0, -500};
 
   uint32_t epoch = SDL_GetTicks();
   while (!quit)
@@ -138,29 +142,36 @@ int main(int argc, char **argv)
           break;
       }
     }
-    SDL_RenderClear(screen);
+//  SDL_RenderClear(screen);
     if (entities) {
       for (int i = 0; i < NUM_ENTITIES; ++i) {
         Entity *entity = &entities[i];
-        dst.w = entity->size;
+        double d = entity->z - camera.z;
+        if (d <= 1)
+          continue;
+        double x = entity->x - camera.x;
+        double y = entity->y - camera.y;
+        dst.w = 2 * entity->size / d;
         dst.h = dst.w;
-        dst.x = entity->x;
-        dst.y = entity->y;
+        dst.x = x / d + width/2;
+        dst.y = y / d +  height/2;
         if (SDL_SetTextureColorMod(ball, entity->r, entity->g, entity->b) < 0)
           fprintf(stderr, "SDL_SetTextureColorMod: %s\n", SDL_GetError());
-        entity->size += 1;
-        entity->x -= 1;
-        entity->y -= 1;
         SDL_RenderCopy(screen, ball, &src, &dst);
       }
     }
     uint32_t delta = SDL_GetTicks() - epoch;
+    if (delta < 20) {
+      SDL_Delay(20 - delta);
+      delta = 20;
+    }
     snprintf(buffer, 16, "%3.0f", 1000.0f / delta);
     FC_Draw(font, screen, width - 64, 8, buffer);
     SDL_RenderPresent(screen);
-    if (delta < 20)
-      SDL_Delay(20 - delta);
-    epoch += delta;
+    epoch = SDL_GetTicks();
+    camera.z += 1;
+    if (camera.z > 100000)
+      camera.z = -100000;
   }
 
   if (entities)
