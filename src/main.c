@@ -12,7 +12,7 @@
 //==============================================================================
 
 #define FOCAL_LENGTH 1000
-#define NUM_ENTITIES 100
+#define NUM_ENTITIES 300
 
 typedef struct
 {
@@ -26,6 +26,10 @@ typedef struct
 } Entity;
 
 //------------------------------------------------------------------------------
+
+int compare(const void * a, const void * b) {
+   return (((Entity*)b)->z - ((Entity*)a)->z);
+}
 
 int main(int argc, char **argv)
 {
@@ -47,14 +51,16 @@ int main(int argc, char **argv)
     fprintf(stderr, "SDL_Init: %s\n", SDL_GetError());
   else if (SDL_GameControllerAddMappingsFromFile("res/gamecontrollerdb.txt") < 0)
     fprintf(stderr, "SDL_GameControllerAddMappingsFromFile: %s\n", SDL_GetError());
-  else if (!SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "0"))
-    fprintf(stderr, "SDL_SetHint: SDL_HINT_RENDER_SCALE_QUALITY\n");
-  else if (!SDL_SetHint(SDL_HINT_RENDER_VSYNC, "1"))
-    fprintf(stderr, "SDL_SetHint: SDL_HINT_RENDER_VSYNC\n");
-  else if (!SDL_SetHint(SDL_HINT_VIDEO_HIGHDPI_DISABLED, "1"))
-    fprintf(stderr, "SDL_SetHint: SDL_HINT_VIDEO_HIGHDPI_DISABLED\n");
-  else if (!SDL_SetHint(SDL_HINT_VIDEO_MAC_FULLSCREEN_SPACES, "0"))
-    fprintf(stderr, "SDL_SetHint: SDL_HINT_VIDEO_MAC_FULLSCREEN_SPACES\n");
+//else if (!SDL_SetHint(SDL_HINT_RENDER_BATCHING, "1"))
+//  fprintf(stderr, "SDL_SetHint: SDL_HINT_RENDER_BATCHING\n");
+//else if (!SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "0"))
+//  fprintf(stderr, "SDL_SetHint: SDL_HINT_RENDER_SCALE_QUALITY\n");
+//else if (!SDL_SetHint(SDL_HINT_RENDER_VSYNC, "1"))
+//  fprintf(stderr, "SDL_SetHint: SDL_HINT_RENDER_VSYNC\n");
+//else if (!SDL_SetHint(SDL_HINT_VIDEO_HIGHDPI_DISABLED, "1"))
+//  fprintf(stderr, "SDL_SetHint: SDL_HINT_VIDEO_HIGHDPI_DISABLED\n");
+//else if (!SDL_SetHint(SDL_HINT_VIDEO_MAC_FULLSCREEN_SPACES, "0"))
+//  fprintf(stderr, "SDL_SetHint: SDL_HINT_VIDEO_MAC_FULLSCREEN_SPACES\n");
   else if (SDL_ShowCursor(SDL_DISABLE) < 0)
     fprintf(stderr, "SDL_ShowCursor: %s\n", SDL_GetError());
   else if (IMG_Init(IMG_INIT_PNG) != IMG_INIT_PNG)
@@ -130,6 +136,8 @@ int main(int argc, char **argv)
 			}
 		}
 	}
+
+  qsort(entities, NUM_ENTITIES, sizeof(Entity), compare);
 
   Entity camera = {0, 0, -20000};
 
