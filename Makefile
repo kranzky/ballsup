@@ -6,10 +6,10 @@ DEPDIR := .d
 DEPFLAGS = -MT $@ -MMD -MP -MF $(DEPDIR)/$*.Td
 
 CC = cc
-CFLAGS = -g -std=c11 -pedantic-errors -Wall $(DEPFLAGS) -I. $(shell sdl2-config --cflags)
+CFLAGS = -g -std=c11 -pedantic-errors -Wall $(DEPFLAGS) -I. $(shell pkg-config raylib --cflags)
 
 LINKER = $(CC) -o
-LFLAGS = -g -Wall -I. -lm $(shell sdl2-config --libs) -lSDL2_Image -lSDL2_TTF
+LFLAGS = -g -Wall -I. -lm $(shell pkg-config raylib --libs)
 
 SRCDIR = src
 OBJDIR = obj
