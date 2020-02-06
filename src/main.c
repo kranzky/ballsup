@@ -13,9 +13,7 @@
 
 typedef struct
 {
-  double x;
-  double y;
-  double z;
+  Vector3 position;
   double size;
   Color color;
 } Entity;
@@ -24,7 +22,7 @@ typedef struct
 
 int compare(const void *a, const void *b)
 {
-  return (((Entity *)b)->z - ((Entity *)a)->z);
+  return (((Entity *)b)->position.z - ((Entity *)a)->position.z);
 }
 
 int main(int argc, char **argv)
@@ -52,9 +50,9 @@ int main(int argc, char **argv)
     {
       Entity *entity = &entities[i];
       entity->size = 256; // rand() % 240 + 16;
-      entity->x = rand() % 10000 - rand() % 10000;
-      entity->y = rand() % 10000 - rand() % 10000;
-      entity->z = rand() % 10000 - rand() % 10000;
+      entity->position.x = rand() % 10000 - rand() % 10000;
+      entity->position.y = rand() % 10000 - rand() % 10000;
+      entity->position.z = rand() % 10000 - rand() % 10000;
       entity->color.r = rand() % 0xFF;
       entity->color.g = rand() % 0xFF;
       entity->color.b = rand() % 0xFF;
@@ -71,16 +69,16 @@ int main(int argc, char **argv)
         int i = (x + 1) + 3 * (y + 1) + 9 * (1 - z);
         if (i >= NUM_ENTITIES)
           continue;
-        entities[i].x = x * 256;
-        entities[i].y = y * 256;
-        entities[i].z = z * 256;
+        entities[i].position.x = x * 256;
+        entities[i].position.y = y * 256;
+        entities[i].position.z = z * 256;
       }
     }
   }
 
   qsort(entities, NUM_ENTITIES, sizeof(Entity), compare);
 
-  Entity camera = {0, 0, -20000};
+  Vector3 camera = {0, 0, -20000};
 
   while (!WindowShouldClose())
   {
@@ -89,11 +87,11 @@ int main(int argc, char **argv)
     for (int i = 0; i < NUM_ENTITIES; ++i)
     {
       Entity *entity = &entities[i];
-      double d = entity->z - camera.z;
+      double d = entity->position.z - camera.z;
       if (d <= 1)
         continue;
-      double x = entity->x - camera.x;
-      double y = entity->y - camera.y;
+      double x = entity->position.x - camera.x;
+      double y = entity->position.y - camera.y;
       dst.width = FOCAL_LENGTH * entity->size / d;
       dst.height = dst.width;
       dst.x = FOCAL_LENGTH * x / d + width / 2;
@@ -107,6 +105,7 @@ int main(int argc, char **argv)
     DrawFPS(10, 10);
     EndDrawing();
     camera.z += 50;
+    camera.y += 1;
     if (camera.z > 10000)
       camera.z = -20000;
   }
