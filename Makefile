@@ -5,10 +5,10 @@ TARGET = ballsup
 DEPDIR := .d
 DEPFLAGS = -MT $@ -MMD -MP -MF $(DEPDIR)/$*.Td
 
-CC = gcc
+CC = cc
 CFLAGS = -g -std=c11 -pedantic-errors -Wall $(DEPFLAGS) -I. $(shell sdl2-config --cflags)
 
-LINKER = gcc -o
+LINKER = $(CC) -o
 LFLAGS = -g -Wall -I. -lm $(shell sdl2-config --libs) -lSDL2_Image -lSDL2_TTF
 
 SRCDIR = src
