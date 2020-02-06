@@ -10,7 +10,7 @@
 //==============================================================================
 
 #define FOCAL_LENGTH 1000
-#define NUM_ENTITIES 500
+#define NUM_ENTITIES 1000
 
 typedef struct
 {
@@ -83,9 +83,9 @@ int main(int argc, char **argv)
         int i = (x + 1) + 3 * (y + 1) + 9 * (1 - z);
         if (i >= NUM_ENTITIES)
           continue;
-        entities[i].position.x = x * 255;
-        entities[i].position.y = y * 255;
-        entities[i].position.z = z * 255;
+        entities[i].position.x = x * 250;
+        entities[i].position.y = y * 250;
+        entities[i].position.z = z * 250;
         entities[i].rotate = true;
       }
     }
@@ -109,12 +109,12 @@ int main(int argc, char **argv)
   q.z = x0 * y0 * z1 - x1 * y1 * z0;
   q.w = x0 * y0 * z0 + x1 * y1 * z1;
 
-  Vector3 camera = {0, 0, -5000};
+  Vector3 camera = {0, 0, -2000};
 
   while (!WindowShouldClose())
   {
     qsort(entities, NUM_ENTITIES, sizeof(Entity), compare);
-    camera.z += 1;
+    //  camera.z += 1;
     if (camera.z > 10000)
       camera.z = -20000;
     BeginDrawing();
