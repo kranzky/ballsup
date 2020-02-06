@@ -3,13 +3,14 @@
 #include <assert.h>
 #include <stdio.h>
 #include <time.h>
+#include <math.h>
 
 #include <raylib.h>
 
 //==============================================================================
 
 #define FOCAL_LENGTH 1000
-#define NUM_ENTITIES 300
+#define NUM_ENTITIES 27
 
 typedef struct
 {
@@ -23,6 +24,17 @@ typedef struct
 int compare(const void *a, const void *b)
 {
   return (((Entity *)b)->position.z - ((Entity *)a)->position.z);
+}
+
+Vector3 Vector3RotateByQuaternion(Vector3 v, Quaternion q)
+{
+  Vector3 result = {0};
+
+  result.x = v.x * (q.x * q.x + q.w * q.w - q.y * q.y - q.z * q.z) + v.y * (2 * q.x * q.y - 2 * q.w * q.z) + v.z * (2 * q.x * q.z + 2 * q.w * q.y);
+  result.y = v.x * (2 * q.w * q.z + 2 * q.x * q.y) + v.y * (q.w * q.w - q.x * q.x + q.y * q.y - q.z * q.z) + v.z * (-2 * q.w * q.x + 2 * q.y * q.z);
+  result.z = v.x * (-2 * q.w * q.y + 2 * q.x * q.z) + v.y * (2 * q.w * q.x + 2 * q.y * q.z) + v.z * (q.w * q.w - q.x * q.x - q.y * q.y + q.z * q.z);
+
+  return result;
 }
 
 int main(int argc, char **argv)
@@ -76,12 +88,32 @@ int main(int argc, char **argv)
     }
   }
 
-  qsort(entities, NUM_ENTITIES, sizeof(Entity), compare);
+  float roll = 0.01;
+  float pitch = 0.02;
+  float yaw = 0.03;
 
-  Vector3 camera = {0, 0, -20000};
+  Quaternion q = {0};
+
+  float x0 = cosf(roll * 0.5f);
+  float x1 = sinf(roll * 0.5f);
+  float y0 = cosf(pitch * 0.5f);
+  float y1 = sinf(pitch * 0.5f);
+  float z0 = cosf(yaw * 0.5f);
+  float z1 = sinf(yaw * 0.5f);
+
+  q.x = x1 * y0 * z0 - x0 * y1 * z1;
+  q.y = x0 * y1 * z0 + x1 * y0 * z1;
+  q.z = x0 * y0 * z1 - x1 * y1 * z0;
+  q.w = x0 * y0 * z0 + x1 * y1 * z1;
+
+  Vector3 camera = {0, 0, -2000};
 
   while (!WindowShouldClose())
   {
+    qsort(entities, NUM_ENTITIES, sizeof(Entity), compare);
+    // camera.z += 50;
+    if (camera.z > 10000)
+      camera.z = -20000;
     BeginDrawing();
     ClearBackground(BLACK);
     for (int i = 0; i < NUM_ENTITIES; ++i)
@@ -98,16 +130,13 @@ int main(int argc, char **argv)
       dst.y = FOCAL_LENGTH * y / d + height / 2;
       origin.x = dst.width / 2;
       origin.y = dst.height / 2;
+      entity->position = Vector3RotateByQuaternion(entity->position, q);
       DrawTexturePro(ball, src, dst, origin, 0.0, entity->color);
     }
     DrawLine(0, height / 2, width, height / 2, GRAY);
     DrawLine(width / 2, 0, width / 2, height, GRAY);
     DrawFPS(10, 10);
     EndDrawing();
-    camera.z += 50;
-    camera.y += 1;
-    if (camera.z > 10000)
-      camera.z = -20000;
   }
 
   if (entities)
