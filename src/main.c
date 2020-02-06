@@ -94,16 +94,17 @@ int main(int argc, char **argv)
         continue;
       double x = entity->x - camera.x;
       double y = entity->y - camera.y;
-      dst.x = FOCAL_LENGTH * x / d + width / 2;
-      dst.y = FOCAL_LENGTH * y / d + height / 2;
       dst.width = FOCAL_LENGTH * entity->size / d;
       dst.height = dst.width;
+      dst.x = FOCAL_LENGTH * x / d + width / 2;
+      dst.y = FOCAL_LENGTH * y / d + height / 2;
       origin.x = dst.width / 2;
       origin.y = dst.height / 2;
       DrawTexturePro(ball, src, dst, origin, 0.0, entity->color);
     }
     DrawLine(0, height / 2, width, height / 2, GRAY);
     DrawLine(width / 2, 0, width / 2, height, GRAY);
+    DrawFPS(10, 10);
     EndDrawing();
     camera.z += 50;
     if (camera.z > 10000)
