@@ -10,13 +10,14 @@
 //==============================================================================
 
 #define FOCAL_LENGTH 1000
-#define NUM_ENTITIES 27
+#define NUM_ENTITIES 500
 
 typedef struct
 {
   Vector3 position;
   double size;
   Color color;
+  bool rotate;
 } Entity;
 
 //------------------------------------------------------------------------------
@@ -69,6 +70,7 @@ int main(int argc, char **argv)
       entity->color.g = rand() % 0xFF;
       entity->color.b = rand() % 0xFF;
       entity->color.a = 0xFF;
+      entity->rotate = false;
     }
   }
 
@@ -81,9 +83,10 @@ int main(int argc, char **argv)
         int i = (x + 1) + 3 * (y + 1) + 9 * (1 - z);
         if (i >= NUM_ENTITIES)
           continue;
-        entities[i].position.x = x * 256;
-        entities[i].position.y = y * 256;
-        entities[i].position.z = z * 256;
+        entities[i].position.x = x * 255;
+        entities[i].position.y = y * 255;
+        entities[i].position.z = z * 255;
+        entities[i].rotate = true;
       }
     }
   }
@@ -106,12 +109,12 @@ int main(int argc, char **argv)
   q.z = x0 * y0 * z1 - x1 * y1 * z0;
   q.w = x0 * y0 * z0 + x1 * y1 * z1;
 
-  Vector3 camera = {0, 0, -2000};
+  Vector3 camera = {0, 0, -5000};
 
   while (!WindowShouldClose())
   {
     qsort(entities, NUM_ENTITIES, sizeof(Entity), compare);
-    // camera.z += 50;
+    camera.z += 1;
     if (camera.z > 10000)
       camera.z = -20000;
     BeginDrawing();
@@ -130,7 +133,10 @@ int main(int argc, char **argv)
       dst.y = FOCAL_LENGTH * y / d + height / 2;
       origin.x = dst.width / 2;
       origin.y = dst.height / 2;
-      entity->position = Vector3RotateByQuaternion(entity->position, q);
+      if (entity->rotate)
+      {
+        entity->position = Vector3RotateByQuaternion(entity->position, q);
+      }
       DrawTexturePro(ball, src, dst, origin, 0.0, entity->color);
     }
     DrawLine(0, height / 2, width, height / 2, GRAY);
