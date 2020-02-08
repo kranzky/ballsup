@@ -109,42 +109,45 @@ int main(int argc, char **argv)
   q.z = x0 * y0 * z1 - x1 * y1 * z0;
   q.w = x0 * y0 * z0 + x1 * y1 * z1;
 
-  Vector3 camera = {0, 0, -2000};
+  Vector3 camera_pos = {0, 0, -2000};
+  Vector3 camera_dir = {0, 0, 1};
 
   while (!WindowShouldClose())
   {
     qsort(entities, NUM_ENTITIES, sizeof(Entity), compare);
     if (IsGamepadAvailable(GAMEPAD_PLAYER1))
     {
-      camera.x += 10 * GetGamepadAxisMovement(GAMEPAD_PLAYER1, GAMEPAD_AXIS_LEFT_X);
-      camera.y += 10 * GetGamepadAxisMovement(GAMEPAD_PLAYER1, GAMEPAD_AXIS_LEFT_Y);
-      camera.z += 10 * GetGamepadAxisMovement(GAMEPAD_PLAYER1, GAMEPAD_AXIS_RIGHT_TRIGGER);
-      camera.z -= 10 * GetGamepadAxisMovement(GAMEPAD_PLAYER1, GAMEPAD_AXIS_LEFT_TRIGGER);
+      camera_pos.x += 10 * GetGamepadAxisMovement(GAMEPAD_PLAYER1, GAMEPAD_AXIS_LEFT_X);
+      camera_pos.y += 10 * GetGamepadAxisMovement(GAMEPAD_PLAYER1, GAMEPAD_AXIS_LEFT_Y);
+      camera_pos.z += 10 * GetGamepadAxisMovement(GAMEPAD_PLAYER1, GAMEPAD_AXIS_RIGHT_TRIGGER);
+      camera_pos.z -= 10 * GetGamepadAxisMovement(GAMEPAD_PLAYER1, GAMEPAD_AXIS_LEFT_TRIGGER);
     }
-    if (camera.z > 10000)
-      camera.z = -20000;
-    if (camera.z < -25000)
-      camera.z = 10000;
+    if (camera_pos.z > 10000)
+      camera_pos.z = -20000;
+    if (camera_pos.z < -25000)
+      camera_pos.z = 10000;
     BeginDrawing();
     ClearBackground(BLACK);
     for (int i = 0; i < NUM_ENTITIES; ++i)
     {
       Entity *entity = &entities[i];
-      double d = entity->position.z - camera.z;
-      if (d <= 1)
-        continue;
-      double x = entity->position.x - camera.x;
-      double y = entity->position.y - camera.y;
-      dst.width = FOCAL_LENGTH * entity->size / d;
-      dst.height = dst.width;
-      dst.x = FOCAL_LENGTH * x / d + width / 2;
-      dst.y = FOCAL_LENGTH * y / d + height / 2;
-      origin.x = dst.width / 2;
-      origin.y = dst.height / 2;
       if (entity->rotate)
       {
+        // TODO: fix numerical precision
         entity->position = Vector3RotateByQuaternion(entity->position, q);
       }
+      // TODO: change calculations based on camera_dir
+      double x = entity->position.x - camera_pos.x;
+      double y = entity->position.y - camera_pos.y;
+      double z = entity->position.z - camera_pos.z;
+      if (z <= 1)
+        continue;
+      dst.width = FOCAL_LENGTH * entity->size / z;
+      dst.height = dst.width;
+      dst.x = FOCAL_LENGTH * x / z + width / 2;
+      dst.y = FOCAL_LENGTH * y / z + height / 2;
+      origin.x = dst.width / 2;
+      origin.y = dst.height / 2;
       DrawTexturePro(ball, src, dst, origin, 0.0, entity->color);
     }
     DrawLine(0, height / 2, width, height / 2, GRAY);
