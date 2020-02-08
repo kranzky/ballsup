@@ -22,6 +22,7 @@ typedef struct
 
 //------------------------------------------------------------------------------
 
+// TODO: take entity size into account
 int compare(const void *a, const void *b)
 {
   return (((Entity *)b)->position.z - ((Entity *)a)->position.z);
@@ -47,6 +48,11 @@ int main(int argc, char **argv)
   srand(time(NULL));
 
   InitWindow(width, height, "Balls Up!");
+  InitAudioDevice();
+
+  Music music = LoadMusicStream("res/balls.mod");
+  PlayMusicStream(music);
+
   Texture2D ball = LoadTexture("res/ball.png");
   SetTargetFPS(60);
 
@@ -114,7 +120,7 @@ int main(int argc, char **argv)
 
   while (!WindowShouldClose())
   {
-    qsort(entities, NUM_ENTITIES, sizeof(Entity), compare);
+    UpdateMusicStream(music);
     if (IsGamepadAvailable(GAMEPAD_PLAYER1))
     {
       camera_pos.x += 10 * GetGamepadAxisMovement(GAMEPAD_PLAYER1, GAMEPAD_AXIS_LEFT_X);
@@ -128,6 +134,8 @@ int main(int argc, char **argv)
       camera_pos.z = 10000;
     BeginDrawing();
     ClearBackground(BLACK);
+    // TODO: needs to take camera_dir into account
+    qsort(entities, NUM_ENTITIES, sizeof(Entity), compare);
     for (int i = 0; i < NUM_ENTITIES; ++i)
     {
       Entity *entity = &entities[i];
@@ -159,6 +167,9 @@ int main(int argc, char **argv)
   if (entities)
     free(entities);
 
+  UnloadMusicStream(music);
+
+  CloseAudioDevice();
   CloseWindow();
 
   return 0;
