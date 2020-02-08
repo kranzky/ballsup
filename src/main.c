@@ -28,7 +28,7 @@ int compare(const void *a, const void *b)
   return (((Entity *)b)->position.z - ((Entity *)a)->position.z);
 }
 
-Vector3 Vector3RotateByQuaternion(Vector3 v, Quaternion q)
+Vector3 rotate(Vector3 v, Quaternion q)
 {
   Vector3 result = {0};
 
@@ -50,12 +50,12 @@ int main(int argc, char **argv)
   InitWindow(width, height, "Balls Up!");
   InitAudioDevice();
 
-  Music music = LoadMusicStream("res/balls.mod");
+  Music music = LoadMusicStream("./res/balls.mod");
   PlayMusicStream(music);
 
-  Texture2D ball = LoadTexture("res/ball.png");
-  Texture2D app = LoadTexture("res/APP_logo.png");
-  Texture2D kb = LoadTexture("res/Kranzky_Brothers_logo.png");
+  Texture2D ball = LoadTexture("./res/ball.png");
+  Texture2D app = LoadTexture("./res/APP_logo.png");
+  Texture2D kb = LoadTexture("./res/Kranzky_Brothers_logo.png");
 
   SetTargetFPS(60);
 
@@ -169,7 +169,7 @@ int main(int argc, char **argv)
       if (entity->rotate)
       {
         // TODO: fix numerical precision
-        entity->position = Vector3RotateByQuaternion(entity->position, q);
+        entity->position = rotate(entity->position, q);
       }
       // TODO: change calculations based on camera_dir
       double x = entity->position.x - camera_pos.x;

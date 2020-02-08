@@ -5,3 +5,5 @@ tmp
 *swp
 .vscode/ipch/
 TODO.txt
+osx/BallsUp.app/Contents/MacOS/ballsup
+osx/BallsUp.app/Contents/MacOS/res
