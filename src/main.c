@@ -54,6 +54,9 @@ int main(int argc, char **argv)
   PlayMusicStream(music);
 
   Texture2D ball = LoadTexture("res/ball.png");
+  Texture2D app = LoadTexture("res/APP_logo.png");
+  Texture2D kb = LoadTexture("res/Kranzky_Brothers_logo.png");
+
   SetTargetFPS(60);
 
   Rectangle src = {0, 0, ball.width, ball.height};
@@ -121,6 +124,28 @@ int main(int argc, char **argv)
   while (!WindowShouldClose())
   {
     UpdateMusicStream(music);
+    if (GetTime() < 12.5)
+    {
+      Texture2D *tex = NULL;
+      if (GetTime() < 7)
+        tex = &app;
+      else
+        tex = &kb;
+      src.width = tex->width;
+      src.height = tex->height;
+      dst.width = src.width;
+      dst.height = src.height;
+      dst.x = width / 2;
+      dst.y = height / 2;
+      origin.x = dst.width / 2;
+      origin.y = dst.height / 2;
+      BeginDrawing();
+      ClearBackground(WHITE);
+      DrawTexturePro(*tex, src, dst, origin, 0.0, WHITE);
+      DrawFPS(10, 10);
+      EndDrawing();
+      continue;
+    }
     if (IsGamepadAvailable(GAMEPAD_PLAYER1))
     {
       camera_pos.x += 10 * GetGamepadAxisMovement(GAMEPAD_PLAYER1, GAMEPAD_AXIS_LEFT_X);
@@ -132,6 +157,8 @@ int main(int argc, char **argv)
       camera_pos.z = -20000;
     if (camera_pos.z < -25000)
       camera_pos.z = 10000;
+    src.width = ball.width;
+    src.height = ball.height;
     BeginDrawing();
     ClearBackground(BLACK);
     // TODO: needs to take camera_dir into account
