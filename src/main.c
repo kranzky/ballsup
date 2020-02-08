@@ -114,9 +114,17 @@ int main(int argc, char **argv)
   while (!WindowShouldClose())
   {
     qsort(entities, NUM_ENTITIES, sizeof(Entity), compare);
-    //  camera.z += 1;
+    if (IsGamepadAvailable(GAMEPAD_PLAYER1))
+    {
+      camera.x += 10 * GetGamepadAxisMovement(GAMEPAD_PLAYER1, GAMEPAD_AXIS_LEFT_X);
+      camera.y += 10 * GetGamepadAxisMovement(GAMEPAD_PLAYER1, GAMEPAD_AXIS_LEFT_Y);
+      camera.z += 10 * GetGamepadAxisMovement(GAMEPAD_PLAYER1, GAMEPAD_AXIS_RIGHT_TRIGGER);
+      camera.z -= 10 * GetGamepadAxisMovement(GAMEPAD_PLAYER1, GAMEPAD_AXIS_LEFT_TRIGGER);
+    }
     if (camera.z > 10000)
       camera.z = -20000;
+    if (camera.z < -25000)
+      camera.z = 10000;
     BeginDrawing();
     ClearBackground(BLACK);
     for (int i = 0; i < NUM_ENTITIES; ++i)
