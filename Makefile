@@ -42,7 +42,7 @@ clean:
 	$(rm) $(BINDIR)/$(TARGET)
 
 osx:
-	clang -framework CoreVideo -framework IOKit -framework Cocoa -framework GLUT /usr/local/opt/raylib/lib/libraylib.a -framework OpenGL src/main.c -o osx/BallsUp.app/Contents/MacOS/ballsup
+	clang -mmacosx-version-min=10.4.0 -framework CoreVideo -framework IOKit -framework Cocoa -framework GLUT /usr/local/opt/raylib/lib/libraylib.a -framework OpenGL src/main.c -o osx/BallsUp.app/Contents/MacOS/ballsup
 	/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/LaunchServices.framework/Versions/A/Support/lsregister -f osx/BallsUp.app
 
 include $(wildcard $(DEPDIR)/*.d)
