@@ -43,6 +43,16 @@ clean:
 
 osx:
 	clang -mmacosx-version-min=10.4.0 -framework CoreVideo -framework IOKit -framework Cocoa -framework GLUT /usr/local/opt/raylib/lib/libraylib.a -framework OpenGL src/main.c -o osx/BallsUp.app/Contents/MacOS/ballsup
+	rm -fR osx/BallsUp.app/Contents/MacOS/res
+	cp -R res osx/BallsUp.app/Contents/MacOS/res
 	/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/LaunchServices.framework/Versions/A/Support/lsregister -f osx/BallsUp.app
+
+dmg: osx
+	hdiutil create -size 32m -fs HFS+ -volname "BallsUp" ballsup_writeable.dmg
+	hdiutil attach ballsup_writeable.dmg
+	cp -R osx/BallsUp.app /Volumes/BallsUp
+	hdiutil detach /Volumes/BallsUp
+	hdiutil convert ballsup_writeable.dmg -format UDZO -o osx/BallsUp.dmg
+	rm ballsup_writeable.dmg
 
 include $(wildcard $(DEPDIR)/*.d)
