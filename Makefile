@@ -5,7 +5,7 @@ TARGET = ballsup
 DEPDIR := .d
 DEPFLAGS = -MT $@ -MMD -MP -MF $(DEPDIR)/$*.Td
 
-CC = cc
+CC = gcc
 CFLAGS = -g -std=c11 -pedantic-errors -Wall $(DEPFLAGS) -I. $(shell pkg-config raylib --cflags)
 
 LINKER = $(CC) -o
@@ -42,10 +42,12 @@ clean:
 	$(rm) $(BINDIR)/$(TARGET)
 
 osx:
-	clang -mmacosx-version-min=10.4.0 -framework CoreVideo -framework IOKit -framework Cocoa -framework GLUT /usr/local/opt/raylib/lib/libraylib.a -framework OpenGL src/main.c -o osx/BallsUp.app/Contents/MacOS/ballsup
+	export MACOSX_DEPLOYMENT_TARGET=10.9
+	clang -mmacosx-version-min=10.9 -framework CoreVideo -framework IOKit -framework Cocoa -framework OpenGL /usr/local/opt/raylib/lib/libraylib.a src/main.c -o osx/BallsUp.app/Contents/MacOS/ballsup
 	rm -fR osx/BallsUp.app/Contents/MacOS/res
 	cp -R res osx/BallsUp.app/Contents/MacOS/res
 	/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/LaunchServices.framework/Versions/A/Support/lsregister -f osx/BallsUp.app
+	otool -l osx/BallsUp.app/Contents/MacOS/ballsup
 
 dmg: osx
 	hdiutil create -size 32m -fs HFS+ -volname "BallsUp" ballsup_writeable.dmg
