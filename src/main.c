@@ -50,8 +50,9 @@ int main(int argc, char **argv)
   InitWindow(width, height, "Balls Up!");
   InitAudioDevice();
 
-  Music music = LoadMusicStream("./res/balls.mod");
-  PlayMusicStream(music);
+  BeginDrawing();
+  DrawText("LOADING DATA", 10, 10, 20, DARKBLUE);
+  EndDrawing();
 
   Texture2D ball = LoadTexture("./res/ball.png");
   Texture2D app = LoadTexture("./res/APP_logo.png");
@@ -121,13 +122,17 @@ int main(int argc, char **argv)
   Vector3 camera_pos = {0, 0, -2000};
   Vector3 camera_dir = {0, 0, 1};
 
+  Music music = LoadMusicStream("./res/balls.mod");
+  PlayMusicStream(music);
+
+  float time = GetTime();
   while (!WindowShouldClose())
   {
     UpdateMusicStream(music);
-    if (GetTime() < 12.5)
+    if (GetTime() - time < 10.4)
     {
       Texture2D *tex = NULL;
-      if (GetTime() < 7)
+      if (GetTime() - time < 5.2)
         tex = &app;
       else
         tex = &kb;
