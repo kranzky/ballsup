@@ -6,37 +6,28 @@
 #include <math.h>
 
 #include <raylib.h>
+#include <raymath.h>
 
 //==============================================================================
 
 #define FOCAL_LENGTH 1000
 #define NUM_ENTITIES 1000
+//#define SHOW_SPLASH 1
 
 typedef struct
 {
   Vector3 position;
   double size;
   Color color;
-  bool rotate;
 } Entity;
 
 //------------------------------------------------------------------------------
 
-// TODO: take entity size into account
 int compare(const void *a, const void *b)
 {
-  return (((Entity *)b)->position.z - ((Entity *)a)->position.z);
-}
-
-Vector3 rotate(Vector3 v, Quaternion q)
-{
-  Vector3 result = {0};
-
-  result.x = v.x * (q.x * q.x + q.w * q.w - q.y * q.y - q.z * q.z) + v.y * (2 * q.x * q.y - 2 * q.w * q.z) + v.z * (2 * q.x * q.z + 2 * q.w * q.y);
-  result.y = v.x * (2 * q.w * q.z + 2 * q.x * q.y) + v.y * (q.w * q.w - q.x * q.x + q.y * q.y - q.z * q.z) + v.z * (-2 * q.w * q.x + 2 * q.y * q.z);
-  result.z = v.x * (-2 * q.w * q.y + 2 * q.x * q.z) + v.y * (2 * q.w * q.x + 2 * q.y * q.z) + v.z * (q.w * q.w - q.x * q.x - q.y * q.y + q.z * q.z);
-
-  return result;
+  Entity* entity_a = (Entity *)a;
+  Entity* entity_b = (Entity *)b;
+  return ((entity_b->position.z + entity_b->size/2) - (entity_a->position.z + entity_a->size/2));
 }
 
 int main(int argc, char **argv)
@@ -80,7 +71,6 @@ int main(int argc, char **argv)
       entity->color.g = rand() % 0xFF;
       entity->color.b = rand() % 0xFF;
       entity->color.a = 0xFF;
-      entity->rotate = false;
     }
   }
 
@@ -96,7 +86,6 @@ int main(int argc, char **argv)
         entities[i].position.x = x * 250;
         entities[i].position.y = y * 250;
         entities[i].position.z = z * 250;
-        entities[i].rotate = true;
       }
     }
   }
@@ -105,29 +94,19 @@ int main(int argc, char **argv)
   float pitch = 0.02;
   float yaw = 0.03;
 
-  Quaternion q = {0};
-
-  float x0 = cosf(roll * 0.5f);
-  float x1 = sinf(roll * 0.5f);
-  float y0 = cosf(pitch * 0.5f);
-  float y1 = sinf(pitch * 0.5f);
-  float z0 = cosf(yaw * 0.5f);
-  float z1 = sinf(yaw * 0.5f);
-
-  q.x = x1 * y0 * z0 - x0 * y1 * z1;
-  q.y = x0 * y1 * z0 + x1 * y0 * z1;
-  q.z = x0 * y0 * z1 - x1 * y1 * z0;
-  q.w = x0 * y0 * z0 + x1 * y1 * z1;
+  Quaternion q = QuaternionFromEuler(roll, pitch, yaw);
 
   Vector3 camera_pos = {0, 0, -2000};
-  Vector3 camera_dir = {0, 0, 1};
 
-  Music music = LoadMusicStream("./res/balls.mod");
-  PlayMusicStream(music);
+#ifdef SHOW_SPLASH
+    Music music = LoadMusicStream("./res/balls.mod");
+    PlayMusicStream(music);
+#endif
 
   float time = GetTime();
   while (!WindowShouldClose())
   {
+#ifdef SHOW_SPLASH
     UpdateMusicStream(music);
     if (GetTime() - time < 10.4)
     {
@@ -151,6 +130,7 @@ int main(int argc, char **argv)
       EndDrawing();
       continue;
     }
+#endif
     if (IsGamepadAvailable(GAMEPAD_PLAYER1))
     {
       camera_pos.x += 10 * GetGamepadAxisMovement(GAMEPAD_PLAYER1, GAMEPAD_AXIS_LEFT_X);
@@ -166,17 +146,11 @@ int main(int argc, char **argv)
     src.height = ball.height;
     BeginDrawing();
     ClearBackground(BLACK);
-    // TODO: needs to take camera_dir into account
     qsort(entities, NUM_ENTITIES, sizeof(Entity), compare);
     for (int i = 0; i < NUM_ENTITIES; ++i)
     {
       Entity *entity = &entities[i];
-      if (entity->rotate)
-      {
-        // TODO: fix numerical precision
-        entity->position = rotate(entity->position, q);
-      }
-      // TODO: change calculations based on camera_dir
+      entity->position = Vector3RotateByQuaternion(entity->position, q);
       double x = entity->position.x - camera_pos.x;
       double y = entity->position.y - camera_pos.y;
       double z = entity->position.z - camera_pos.z;
@@ -199,7 +173,9 @@ int main(int argc, char **argv)
   if (entities)
     free(entities);
 
+#ifdef SHOW_SPLASH
   UnloadMusicStream(music);
+#endif
 
   CloseAudioDevice();
   CloseWindow();

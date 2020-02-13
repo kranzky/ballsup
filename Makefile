@@ -5,11 +5,11 @@ TARGET = ballsup
 DEPDIR := .d
 DEPFLAGS = -MT $@ -MMD -MP -MF $(DEPDIR)/$*.Td
 
-CC = gcc
-CFLAGS = -g -std=c11 -pedantic-errors -Wall $(DEPFLAGS) -I. $(shell pkg-config raylib --cflags)
+CC = clang
+CFLAGS = -g -std=c11 -pedantic-errors -Wall $(DEPFLAGS) -I. -I../raylib/src
 
 LINKER = $(CC) -o
-LFLAGS = -g -Wall -I. -lm $(shell pkg-config raylib --libs)
+LFLAGS = -g -Wall -I. -lm -mmacosx-version-min=10.9 -framework CoreVideo -framework IOKit -framework Cocoa -framework GLUT -framework OpenGL -L../raylib/src -lraylib
 
 SRCDIR = src
 OBJDIR = obj
@@ -43,7 +43,7 @@ clean:
 
 osx:
 	export MACOSX_DEPLOYMENT_TARGET=10.9
-	clang -mmacosx-version-min=10.9 -framework CoreVideo -framework IOKit -framework Cocoa -framework OpenGL /usr/local/opt/raylib/lib/libraylib.a src/main.c -o osx/BallsUp.app/Contents/MacOS/ballsup
+	clang -mmacosx-version-min=10.9 -framework CoreVideo -framework IOKit -framework Cocoa -framework OpenGL ../raylib/src/libraylib.a src/main.c -o osx/BallsUp.app/Contents/MacOS/ballsup
 	rm -fR osx/BallsUp.app/Contents/MacOS/res
 	cp -R res osx/BallsUp.app/Contents/MacOS/res
 	/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/LaunchServices.framework/Versions/A/Support/lsregister -f osx/BallsUp.app
