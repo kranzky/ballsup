@@ -46,8 +46,6 @@ int main(int argc, char **argv)
   EndDrawing();
 
   Texture2D ball = LoadTexture("./res/ball.png");
-  Texture2D app = LoadTexture("./res/APP_logo.png");
-  Texture2D kb = LoadTexture("./res/Kranzky_Brothers_logo.png");
 
   SetTargetFPS(60);
 
@@ -99,11 +97,13 @@ int main(int argc, char **argv)
   Vector3 camera_pos = {0, 0, -2000};
 
 #ifdef SHOW_SPLASH
-    Music music = LoadMusicStream("./res/balls.mod");
-    PlayMusicStream(music);
+  Texture2D app = LoadTexture("./res/APP_logo.png");
+  Texture2D kb = LoadTexture("./res/Kranzky_Brothers_logo.png");
+  Music music = LoadMusicStream("./res/balls.mod");
+  PlayMusicStream(music);
+  float time = GetTime();
 #endif
 
-  float time = GetTime();
   while (!WindowShouldClose())
   {
 #ifdef SHOW_SPLASH

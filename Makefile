@@ -9,7 +9,7 @@ CC = clang
 CFLAGS = -g -std=c11 -pedantic-errors -Wall $(DEPFLAGS) -I. -I../raylib/src
 
 LINKER = $(CC) -o
-LFLAGS = -g -Wall -I. -lm -mmacosx-version-min=10.9 -framework CoreVideo -framework IOKit -framework Cocoa -framework GLUT -framework OpenGL -L../raylib/src -lraylib
+LFLAGS = -g -Wall -mmacosx-version-min=10.9 -framework CoreVideo -framework IOKit -framework Cocoa -framework GLUT -framework OpenGL -L../raylib/src -lraylib
 
 SRCDIR = src
 OBJDIR = obj
@@ -43,7 +43,7 @@ clean:
 
 osx:
 	export MACOSX_DEPLOYMENT_TARGET=10.9
-	clang -mmacosx-version-min=10.9 -framework CoreVideo -framework IOKit -framework Cocoa -framework OpenGL ../raylib/src/libraylib.a src/main.c -o osx/BallsUp.app/Contents/MacOS/ballsup
+	clang -mmacosx-version-min=10.9 -framework CoreVideo -framework IOKit -framework Cocoa -framework OpenGL -I../raylib/src -O3 ../raylib/src/libraylib.a src/main.c -o osx/BallsUp.app/Contents/MacOS/ballsup
 	rm -fR osx/BallsUp.app/Contents/MacOS/res
 	cp -R res osx/BallsUp.app/Contents/MacOS/res
 	/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/LaunchServices.framework/Versions/A/Support/lsregister -f osx/BallsUp.app
