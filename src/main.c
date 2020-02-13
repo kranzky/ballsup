@@ -39,15 +39,14 @@ int main(int argc, char **argv)
   srand(time(NULL));
 
   InitWindow(width, height, "Balls Up!");
-  InitAudioDevice();
+  SetTargetFPS(50);
+  //ToggleFullscreen();
 
   BeginDrawing();
   DrawText("LOADING DATA", 10, 10, 20, DARKBLUE);
   EndDrawing();
 
   Texture2D ball = LoadTexture("./res/ball.png");
-
-  SetTargetFPS(60);
 
   Rectangle src = {0, 0, ball.width, ball.height};
   Vector2 origin = {100, 100};
@@ -97,6 +96,7 @@ int main(int argc, char **argv)
   Vector3 camera_pos = {0, 0, -2000};
 
 #ifdef SHOW_SPLASH
+  InitAudioDevice();
   Texture2D app = LoadTexture("./res/APP_logo.png");
   Texture2D kb = LoadTexture("./res/Kranzky_Brothers_logo.png");
   Music music = LoadMusicStream("./res/balls.mod");
@@ -175,9 +175,9 @@ int main(int argc, char **argv)
 
 #ifdef SHOW_SPLASH
   UnloadMusicStream(music);
+  CloseAudioDevice();
 #endif
 
-  CloseAudioDevice();
   CloseWindow();
 
   return 0;
